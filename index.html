@@ -162,6 +162,7 @@
   input[type="url"],
   input[type="email"],
   textarea,
+  select,
   input[type="color"] {
     width: 100%;
     background: var(--panel-2);
@@ -174,7 +175,8 @@
   }
   input[type="color"] { padding: 0.2rem; height: 2.4rem; cursor: pointer; }
   textarea { resize: vertical; min-height: 4.5rem; }
-  input:focus, textarea:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+  select { cursor: pointer; }
+  input:focus, textarea:focus, select:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
   .row { display: flex; gap: 0.6rem; }
   .row > * { flex: 1; }
   .field-hint { font-size: 0.75rem; color: var(--text-dim); margin-top: 0.25rem; }
@@ -305,6 +307,24 @@
     </fieldset>
 
     <fieldset>
+      <legend>Expérience professionnelle</legend>
+      <div id="experience-list"></div>
+      <button class="btn-ghost" id="btn-add-experience">+ Ajouter une expérience</button>
+    </fieldset>
+
+    <fieldset>
+      <legend>Formation</legend>
+      <div id="education-list"></div>
+      <button class="btn-ghost" id="btn-add-education">+ Ajouter une formation</button>
+    </fieldset>
+
+    <fieldset>
+      <legend>Projets</legend>
+      <div id="projects-list"></div>
+      <button class="btn-ghost" id="btn-add-project">+ Ajouter un projet</button>
+    </fieldset>
+
+    <fieldset>
       <legend>Compétences</legend>
       <div class="tag-input-row">
         <input type="text" id="f-skill-input" placeholder="Ex : JavaScript">
@@ -314,9 +334,35 @@
     </fieldset>
 
     <fieldset>
-      <legend>Projets</legend>
-      <div id="projects-list"></div>
-      <button class="btn-ghost" id="btn-add-project">+ Ajouter un projet</button>
+      <legend>Langues</legend>
+      <div class="row">
+        <input type="text" id="f-language-input" placeholder="Ex : Anglais">
+        <select id="f-language-level">
+          <option value="">Niveau</option>
+          <option value="Débutant">Débutant</option>
+          <option value="Intermédiaire">Intermédiaire</option>
+          <option value="Avancé">Avancé</option>
+          <option value="Courant">Courant</option>
+          <option value="Natif">Natif</option>
+        </select>
+        <button class="btn-secondary" id="btn-add-language">Ajouter</button>
+      </div>
+      <ul class="tag-list" id="languages-list"></ul>
+    </fieldset>
+
+    <fieldset>
+      <legend>Certifications</legend>
+      <div id="certifications-list"></div>
+      <button class="btn-ghost" id="btn-add-certification">+ Ajouter une certification</button>
+    </fieldset>
+
+    <fieldset>
+      <legend>Centres d'intérêt</legend>
+      <div class="tag-input-row">
+        <input type="text" id="f-interest-input" placeholder="Ex : Photographie">
+        <button class="btn-secondary" id="btn-add-interest">Ajouter</button>
+      </div>
+      <ul class="tag-list" id="interests-list"></ul>
     </fieldset>
   </section>
 
@@ -360,7 +406,12 @@
       email: ""
     },
     skills: [],
-    projects: []
+    projects: [],
+    experience: [],
+    education: [],
+    languages: [],
+    certifications: [],
+    interests: []
   };
 
   let projectSeq = 0;
@@ -369,6 +420,24 @@
     return { id: "p" + projectSeq, name: "", description: "", tech: [], github: "", demo: "" };
   }
   state.projects.push(newProject());
+
+  let experienceSeq = 0;
+  function newExperience() {
+    experienceSeq += 1;
+    return { id: "x" + experienceSeq, poste: "", entreprise: "", lieu: "", periode: "", description: "" };
+  }
+
+  let educationSeq = 0;
+  function newEducation() {
+    educationSeq += 1;
+    return { id: "e" + educationSeq, diplome: "", etablissement: "", periode: "" };
+  }
+
+  let certificationSeq = 0;
+  function newCertification() {
+    certificationSeq += 1;
+    return { id: "c" + certificationSeq, nom: "", organisme: "", annee: "", lien: "" };
+  }
 
   /* ---------------------------------------------------------------------
    * Helpers
@@ -408,7 +477,7 @@
   function buildCSS() {
     const accent = state.profile.accent || "#6d5ef8";
     return `/* -------------------------------------------------------------
- * style.css - Portfolio genere automatiquement
+ * style.css - Portfolio généré automatiquement
  * Palette neutre + une couleur d'accent configurable ci-dessous.
  * ------------------------------------------------------------- */
 
@@ -491,7 +560,7 @@ img { max-width: 100%; display: block; }
 }
 .socials a:hover { border-color: var(--accent); color: var(--accent); text-decoration: none; }
 
-/* ---------- Sections generiques ---------- */
+/* ---------- Sections génériques ---------- */
 .section { padding: 3rem 0; }
 .section.alt { background: var(--bg-alt); }
 .section h2 {
@@ -537,13 +606,101 @@ img { max-width: 100%; display: block; }
 .project-links { display: flex; gap: 0.9rem; }
 .project-links a { font-size: 0.88rem; font-weight: 600; }
 
-/* ---------- Competences ---------- */
+/* ---------- Compétences ---------- */
 .skills-list { justify-content: center; }
 .skills-list li {
   background: var(--bg);
   font-size: 0.85rem;
   padding: 0.35rem 0.85rem;
 }
+
+/* ---------- Langues ---------- */
+.languages-list { justify-content: center; }
+.languages-list li {
+  background: var(--bg);
+  font-size: 0.85rem;
+  padding: 0.35rem 0.85rem;
+}
+.languages-list .level {
+  color: var(--accent);
+  font-weight: 600;
+  margin-left: 0.35rem;
+}
+
+/* ---------- Centres d'intérêt ---------- */
+.interests-list { justify-content: center; }
+.interests-list li {
+  background: var(--bg);
+  font-size: 0.85rem;
+  padding: 0.35rem 0.85rem;
+}
+
+/* ---------- Expérience / Formation (timeline) ---------- */
+.timeline {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  max-width: 760px;
+  margin: 0 auto;
+}
+.timeline-item {
+  border-left: 2px solid var(--border);
+  padding-left: 1.25rem;
+  position: relative;
+}
+.timeline-item::before {
+  content: "";
+  position: absolute;
+  left: -6px;
+  top: 0.3rem;
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+.timeline-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+.timeline-header h3 { margin: 0; font-size: 1.05rem; }
+.timeline-period {
+  color: var(--text-dim);
+  font-size: 0.82rem;
+  white-space: nowrap;
+}
+.timeline-subtitle {
+  margin: 0.15rem 0 0.5rem;
+  color: var(--accent);
+  font-weight: 600;
+  font-size: 0.92rem;
+}
+.timeline-item p:last-child { margin-bottom: 0; color: var(--text-dim); }
+
+/* ---------- Certifications ---------- */
+.certifications-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 auto;
+  max-width: 640px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+.certifications-list li {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0.85rem 1rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+.certifications-list .cert-name { font-weight: 600; }
+.certifications-list .cert-meta { color: var(--text-dim); font-size: 0.85rem; }
 
 /* ---------- Contact ---------- */
 #contact { text-align: center; }
@@ -561,8 +718,8 @@ footer p {
   margin: 0;
 }
 
-/* ---------- Responsive (mobile-first: la mise en page ci-dessus
-   s'empile deja verticalement par defaut; ajustements ecrans larges) ---------- */
+/* ---------- Responsive (mobile-first : la mise en page ci-dessus
+   s'empile déjà verticalement par défaut ; ajustements écrans larges) ---------- */
 @media (min-width: 640px) {
   .hero { padding: 4rem 0 3rem; }
   .hero h1 { font-size: 2.4rem; }
@@ -573,7 +730,7 @@ footer p {
   function buildHTML() {
     const p = state.profile;
     const name = p.name || "Votre nom";
-    const title = p.title || "Votre titre ou role";
+    const title = p.title || "Votre titre ou rôle";
     const year = new Date().getFullYear();
 
     const photoSrc = p.photoDataUrl || (p.photoUrl ? safeUrl(p.photoUrl) : "");
@@ -589,23 +746,116 @@ footer p {
       ? `<div class="socials">\n      ${socialLinks.join("\n      ")}\n    </div>`
       : "";
 
+    const experienceMarkup = state.experience
+      .filter(function (exp) { return exp.poste.trim() || exp.entreprise.trim(); })
+      .map(function (exp) {
+        const subtitle = [exp.entreprise, exp.lieu].filter(Boolean).map(esc).join(" — ");
+        return `        <article class="timeline-item">
+          <div class="timeline-header">
+            <h3>${esc(exp.poste || "Poste")}</h3>
+            ${exp.periode ? `<span class="timeline-period">${esc(exp.periode)}</span>` : ""}
+          </div>
+          ${subtitle ? `<p class="timeline-subtitle">${subtitle}</p>` : ""}
+          ${exp.description ? `<p>${esc(exp.description)}</p>` : ""}
+        </article>`;
+      })
+      .join("\n");
+
+    const educationMarkup = state.education
+      .filter(function (ed) { return ed.diplome.trim() || ed.etablissement.trim(); })
+      .map(function (ed) {
+        return `        <article class="timeline-item">
+          <div class="timeline-header">
+            <h3>${esc(ed.diplome || "Diplôme")}</h3>
+            ${ed.periode ? `<span class="timeline-period">${esc(ed.periode)}</span>` : ""}
+          </div>
+          ${ed.etablissement ? `<p class="timeline-subtitle">${esc(ed.etablissement)}</p>` : ""}
+        </article>`;
+      })
+      .join("\n");
+
     const projectsMarkup = state.projects
       .filter(function (proj) { return proj.name.trim() || proj.description.trim(); })
       .map(function (proj) {
         const tagsMarkup = proj.tech.map(function (t) { return `<li>${esc(t)}</li>`; }).join("");
         const links = [];
         if (proj.github) links.push(`<a href="${esc(safeUrl(proj.github))}" target="_blank" rel="noopener">Code source</a>`);
-        if (proj.demo) links.push(`<a href="${esc(safeUrl(proj.demo))}" target="_blank" rel="noopener">Demo</a>`);
-        return `      <article class="project-card">
-        <h3>${esc(proj.name || "Projet sans nom")}</h3>
-        <p>${esc(proj.description)}</p>
-        ${tagsMarkup ? `<ul class="tags">${tagsMarkup}</ul>` : ""}
-        ${links.length ? `<div class="project-links">${links.join("\n          ")}</div>` : ""}
-      </article>`;
+        if (proj.demo) links.push(`<a href="${esc(safeUrl(proj.demo))}" target="_blank" rel="noopener">Démo</a>`);
+        return `        <article class="project-card">
+          <h3>${esc(proj.name || "Projet sans nom")}</h3>
+          <p>${esc(proj.description)}</p>
+          ${tagsMarkup ? `<ul class="tags">${tagsMarkup}</ul>` : ""}
+          ${links.length ? `<div class="project-links">${links.join("\n            ")}</div>` : ""}
+        </article>`;
       })
       .join("\n");
 
-    const skillsMarkup = state.skills.map(function (s) { return `      <li>${esc(s)}</li>`; }).join("\n");
+    const skillsMarkup = state.skills.map(function (s) { return `          <li>${esc(s)}</li>`; }).join("\n");
+
+    const languagesMarkup = state.languages
+      .map(function (l) { return `          <li>${esc(l.name)}${l.level ? ` <span class="level">${esc(l.level)}</span>` : ""}</li>`; })
+      .join("\n");
+
+    const certificationsMarkup = state.certifications
+      .filter(function (c) { return c.nom.trim(); })
+      .map(function (c) {
+        const meta = [c.organisme, c.annee].filter(Boolean).map(esc).join(" · ");
+        const nameMarkup = c.lien
+          ? `<a href="${esc(safeUrl(c.lien))}" target="_blank" rel="noopener">${esc(c.nom)}</a>`
+          : esc(c.nom);
+        return `          <li>
+            <span class="cert-name">${nameMarkup}</span>
+            ${meta ? `<span class="cert-meta">${meta}</span>` : ""}
+          </li>`;
+      })
+      .join("\n");
+
+    const interestsMarkup = state.interests.map(function (s) { return `          <li>${esc(s)}</li>`; }).join("\n");
+
+    // Chaque section n'est incluse que si elle contient des donnees ;
+    // le fond alterne (classe "alt") selon la position finale dans la page.
+    const sections = [];
+
+    if (experienceMarkup) {
+      sections.push({ id: "experience", title: "Expérience professionnelle", body: `<div class="timeline">\n${experienceMarkup}\n        </div>` });
+    }
+    if (educationMarkup) {
+      sections.push({ id: "education", title: "Formation", body: `<div class="timeline">\n${educationMarkup}\n        </div>` });
+    }
+    sections.push({
+      id: "projects",
+      title: "Projets",
+      body: projectsMarkup
+        ? `<div class="projects-grid">\n${projectsMarkup}\n        </div>`
+        : `<p style="text-align:center;color:var(--text-dim);">Aucun projet renseigné pour le moment.</p>`
+    });
+    if (state.skills.length) {
+      sections.push({ id: "skills", title: "Compétences", body: `<ul class="tags skills-list">\n${skillsMarkup}\n        </ul>` });
+    }
+    if (state.languages.length) {
+      sections.push({ id: "languages", title: "Langues", body: `<ul class="tags languages-list">\n${languagesMarkup}\n        </ul>` });
+    }
+    if (certificationsMarkup) {
+      sections.push({ id: "certifications", title: "Certifications", body: `<ul class="certifications-list">\n${certificationsMarkup}\n        </ul>` });
+    }
+    if (state.interests.length) {
+      sections.push({ id: "interests", title: "Centres d'intérêt", body: `<ul class="tags interests-list">\n${interestsMarkup}\n        </ul>` });
+    }
+    sections.push({
+      id: "contact",
+      title: "Contact",
+      body: `<p>N'hésitez pas à me contacter.</p>\n        ${socialsMarkup}`
+    });
+
+    const sectionsMarkup = sections.map(function (sec, idx) {
+      return `    <!-- ${sec.title} -->
+    <section id="${sec.id}" class="section${idx % 2 === 1 ? " alt" : ""}">
+      <div class="container">
+        <h2>${esc(sec.title)}</h2>
+        ${sec.body}
+      </div>
+    </section>`;
+    }).join("\n\n");
 
     return `<!DOCTYPE html>
 <html lang="fr">
@@ -618,7 +868,7 @@ footer p {
 </head>
 <body>
 
-  <!-- En-tete / profil -->
+  <!-- En-tête / profil -->
   <header class="hero">
     <div class="container hero-content">
       ${avatarMarkup}
@@ -630,39 +880,12 @@ footer p {
   </header>
 
   <main>
-    <!-- Projets -->
-    <section id="projects" class="section">
-      <div class="container">
-        <h2>Projets</h2>
-        ${projectsMarkup
-          ? `<div class="projects-grid">\n${projectsMarkup}\n        </div>`
-          : `<p style="text-align:center;color:var(--text-dim);">Aucun projet renseigne pour le moment.</p>`}
-      </div>
-    </section>
-
-    <!-- Competences -->
-    ${state.skills.length ? `<section id="skills" class="section alt">
-      <div class="container">
-        <h2>Competences</h2>
-        <ul class="tags skills-list">
-${skillsMarkup}
-        </ul>
-      </div>
-    </section>` : ""}
-
-    <!-- Contact -->
-    <section id="contact" class="section">
-      <div class="container">
-        <h2>Contact</h2>
-        <p>N'hesitez pas a me contacter.</p>
-        ${socialsMarkup}
-      </div>
-    </section>
+${sectionsMarkup}
   </main>
 
   <footer>
     <div class="container">
-      <p>&copy; ${year} ${esc(name)}. Tous droits reserves.</p>
+      <p>&copy; ${year} ${esc(name)}. Tous droits réservés.</p>
     </div>
   </footer>
 
@@ -719,29 +942,97 @@ ${skillsMarkup}
     reader.readAsDataURL(file);
   });
 
-  /* ---- Skills ---- */
-  function renderSkills() {
-    const list = document.getElementById("skills-list");
+  /* ---- Listes de tags simples (compétences, centres d'intérêt) ---- */
+  function renderSimpleTagList(listId, arr, emptyText, onChange) {
+    const list = document.getElementById(listId);
     list.innerHTML = "";
-    if (state.skills.length === 0) {
+    if (arr.length === 0) {
       const li = document.createElement("li");
       li.className = "empty-state";
-      li.textContent = "Aucune competence ajoutee.";
+      li.textContent = emptyText;
       list.appendChild(li);
       return;
     }
-    state.skills.forEach(function (skill, idx) {
+    arr.forEach(function (item, idx) {
       const li = document.createElement("li");
       li.className = "tag-chip";
       const span = document.createElement("span");
-      span.textContent = skill;
+      span.textContent = item;
       const btn = document.createElement("button");
       btn.type = "button";
-      btn.setAttribute("aria-label", "Supprimer " + skill);
+      btn.setAttribute("aria-label", "Supprimer " + item);
       btn.textContent = "×";
       btn.addEventListener("click", function () {
-        state.skills.splice(idx, 1);
-        renderSkills();
+        arr.splice(idx, 1);
+        onChange();
+      });
+      li.appendChild(span);
+      li.appendChild(btn);
+      list.appendChild(li);
+    });
+  }
+
+  function bindTagAdder(inputId, buttonId, arr, renderFn) {
+    const input = document.getElementById(inputId);
+    function addFromInput() {
+      const value = input.value.trim();
+      if (!value) return;
+      arr.push(value);
+      input.value = "";
+      renderFn();
+      renderPreview();
+      input.focus();
+    }
+    document.getElementById(buttonId).addEventListener("click", addFromInput);
+    input.addEventListener("keydown", function (e) {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        addFromInput();
+      }
+    });
+  }
+
+  /* ---- Skills ---- */
+  function renderSkills() {
+    renderSimpleTagList("skills-list", state.skills, "Aucune compétence ajoutée.", function () {
+      renderSkills();
+      renderPreview();
+    });
+  }
+  bindTagAdder("f-skill-input", "btn-add-skill", state.skills, renderSkills);
+
+  /* ---- Centres d'intérêt ---- */
+  function renderInterests() {
+    renderSimpleTagList("interests-list", state.interests, "Aucun centre d'intérêt ajouté.", function () {
+      renderInterests();
+      renderPreview();
+    });
+  }
+  bindTagAdder("f-interest-input", "btn-add-interest", state.interests, renderInterests);
+
+  /* ---- Langues ---- */
+  function renderLanguages() {
+    const list = document.getElementById("languages-list");
+    list.innerHTML = "";
+    if (state.languages.length === 0) {
+      const li = document.createElement("li");
+      li.className = "empty-state";
+      li.textContent = "Aucune langue ajoutée.";
+      list.appendChild(li);
+      return;
+    }
+    state.languages.forEach(function (lang, idx) {
+      const li = document.createElement("li");
+      li.className = "tag-chip";
+      const span = document.createElement("span");
+      span.textContent = lang.level ? lang.name + " — " + lang.level : lang.name;
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.setAttribute("aria-label", "Supprimer " + lang.name);
+      btn.textContent = "×";
+      btn.addEventListener("click", function () {
+        state.languages.splice(idx, 1);
+        renderLanguages();
         renderPreview();
       });
       li.appendChild(span);
@@ -750,22 +1041,24 @@ ${skillsMarkup}
     });
   }
 
-  function addSkillFromInput() {
-    const input = document.getElementById("f-skill-input");
-    const value = input.value.trim();
-    if (!value) return;
-    state.skills.push(value);
-    input.value = "";
-    renderSkills();
+  function addLanguageFromInput() {
+    const nameInput = document.getElementById("f-language-input");
+    const levelSelect = document.getElementById("f-language-level");
+    const name = nameInput.value.trim();
+    if (!name) return;
+    state.languages.push({ name: name, level: levelSelect.value });
+    nameInput.value = "";
+    levelSelect.value = "";
+    renderLanguages();
     renderPreview();
-    input.focus();
+    nameInput.focus();
   }
 
-  document.getElementById("btn-add-skill").addEventListener("click", addSkillFromInput);
-  document.getElementById("f-skill-input").addEventListener("keydown", function (e) {
+  document.getElementById("btn-add-language").addEventListener("click", addLanguageFromInput);
+  document.getElementById("f-language-input").addEventListener("keydown", function (e) {
     if (e.key === "Enter") {
       e.preventDefault();
-      addSkillFromInput();
+      addLanguageFromInput();
     }
   });
 
@@ -797,7 +1090,7 @@ ${skillsMarkup}
         <textarea data-field="description" placeholder="En une ou deux phrases...">${esc(proj.description)}</textarea>
         <label>Lien GitHub</label>
         <input type="url" data-field="github" placeholder="https://github.com/..." value="${esc(proj.github)}">
-        <label>Lien demo (optionnel)</label>
+        <label>Lien démo (optionnel)</label>
         <input type="url" data-field="demo" placeholder="https://..." value="${esc(proj.demo)}">
         <label>Technologies</label>
         <div class="tag-input-row">
@@ -872,6 +1165,174 @@ ${skillsMarkup}
   document.getElementById("btn-add-project").addEventListener("click", function () {
     state.projects.push(newProject());
     renderProjects();
+    renderPreview();
+  });
+
+  /* ---- Expérience professionnelle ---- */
+  function renderExperience() {
+    const list = document.getElementById("experience-list");
+    list.innerHTML = "";
+
+    if (state.experience.length === 0) {
+      const p = document.createElement("p");
+      p.className = "empty-state";
+      p.textContent = "Aucune expérience. Cliquez sur « + Ajouter une expérience ».";
+      list.appendChild(p);
+      return;
+    }
+
+    state.experience.forEach(function (exp, index) {
+      const card = document.createElement("div");
+      card.className = "project-card-editor";
+
+      card.innerHTML = `
+        <div class="project-head">
+          <strong>Expérience ${index + 1}</strong>
+          <button type="button" class="btn-danger" data-action="remove">Supprimer</button>
+        </div>
+        <label>Poste</label>
+        <input type="text" data-field="poste" placeholder="Ex : Développeuse Front-End" value="${esc(exp.poste)}">
+        <label>Entreprise</label>
+        <input type="text" data-field="entreprise" placeholder="Nom de l'entreprise" value="${esc(exp.entreprise)}">
+        <label>Lieu (optionnel)</label>
+        <input type="text" data-field="lieu" placeholder="Ville, pays" value="${esc(exp.lieu)}">
+        <label>Période</label>
+        <input type="text" data-field="periode" placeholder="Ex : 2022 — 2024" value="${esc(exp.periode)}">
+        <label>Description</label>
+        <textarea data-field="description" placeholder="Missions, résultats...">${esc(exp.description)}</textarea>
+      `;
+
+      ["poste", "entreprise", "lieu", "periode", "description"].forEach(function (field) {
+        const el = card.querySelector('[data-field="' + field + '"]');
+        el.addEventListener("input", function () {
+          exp[field] = el.value;
+          renderPreview();
+        });
+      });
+
+      card.querySelector('[data-action="remove"]').addEventListener("click", function () {
+        state.experience.splice(index, 1);
+        renderExperience();
+        renderPreview();
+      });
+
+      list.appendChild(card);
+    });
+  }
+
+  document.getElementById("btn-add-experience").addEventListener("click", function () {
+    state.experience.push(newExperience());
+    renderExperience();
+    renderPreview();
+  });
+
+  /* ---- Formation ---- */
+  function renderEducation() {
+    const list = document.getElementById("education-list");
+    list.innerHTML = "";
+
+    if (state.education.length === 0) {
+      const p = document.createElement("p");
+      p.className = "empty-state";
+      p.textContent = "Aucune formation. Cliquez sur « + Ajouter une formation ».";
+      list.appendChild(p);
+      return;
+    }
+
+    state.education.forEach(function (ed, index) {
+      const card = document.createElement("div");
+      card.className = "project-card-editor";
+
+      card.innerHTML = `
+        <div class="project-head">
+          <strong>Formation ${index + 1}</strong>
+          <button type="button" class="btn-danger" data-action="remove">Supprimer</button>
+        </div>
+        <label>Diplôme</label>
+        <input type="text" data-field="diplome" placeholder="Ex : Master Informatique" value="${esc(ed.diplome)}">
+        <label>Établissement</label>
+        <input type="text" data-field="etablissement" placeholder="Nom de l'école ou université" value="${esc(ed.etablissement)}">
+        <label>Période</label>
+        <input type="text" data-field="periode" placeholder="Ex : 2020 — 2022" value="${esc(ed.periode)}">
+      `;
+
+      ["diplome", "etablissement", "periode"].forEach(function (field) {
+        const el = card.querySelector('[data-field="' + field + '"]');
+        el.addEventListener("input", function () {
+          ed[field] = el.value;
+          renderPreview();
+        });
+      });
+
+      card.querySelector('[data-action="remove"]').addEventListener("click", function () {
+        state.education.splice(index, 1);
+        renderEducation();
+        renderPreview();
+      });
+
+      list.appendChild(card);
+    });
+  }
+
+  document.getElementById("btn-add-education").addEventListener("click", function () {
+    state.education.push(newEducation());
+    renderEducation();
+    renderPreview();
+  });
+
+  /* ---- Certifications ---- */
+  function renderCertifications() {
+    const list = document.getElementById("certifications-list");
+    list.innerHTML = "";
+
+    if (state.certifications.length === 0) {
+      const p = document.createElement("p");
+      p.className = "empty-state";
+      p.textContent = "Aucune certification. Cliquez sur « + Ajouter une certification ».";
+      list.appendChild(p);
+      return;
+    }
+
+    state.certifications.forEach(function (cert, index) {
+      const card = document.createElement("div");
+      card.className = "project-card-editor";
+
+      card.innerHTML = `
+        <div class="project-head">
+          <strong>Certification ${index + 1}</strong>
+          <button type="button" class="btn-danger" data-action="remove">Supprimer</button>
+        </div>
+        <label>Nom</label>
+        <input type="text" data-field="nom" placeholder="Ex : AWS Certified Developer" value="${esc(cert.nom)}">
+        <label>Organisme</label>
+        <input type="text" data-field="organisme" placeholder="Ex : Amazon Web Services" value="${esc(cert.organisme)}">
+        <label>Année</label>
+        <input type="text" data-field="annee" placeholder="Ex : 2024" value="${esc(cert.annee)}">
+        <label>Lien (optionnel)</label>
+        <input type="url" data-field="lien" placeholder="https://..." value="${esc(cert.lien)}">
+      `;
+
+      ["nom", "organisme", "annee", "lien"].forEach(function (field) {
+        const el = card.querySelector('[data-field="' + field + '"]');
+        el.addEventListener("input", function () {
+          cert[field] = el.value;
+          renderPreview();
+        });
+      });
+
+      card.querySelector('[data-action="remove"]').addEventListener("click", function () {
+        state.certifications.splice(index, 1);
+        renderCertifications();
+        renderPreview();
+      });
+
+      list.appendChild(card);
+    });
+  }
+
+  document.getElementById("btn-add-certification").addEventListener("click", function () {
+    state.certifications.push(newCertification());
+    renderCertifications();
     renderPreview();
   });
 
@@ -1024,8 +1485,13 @@ ${skillsMarkup}
   /* ---------------------------------------------------------------------
    * Init
    * ------------------------------------------------------------------- */
-  renderSkills();
+  renderExperience();
+  renderEducation();
   renderProjects();
+  renderSkills();
+  renderLanguages();
+  renderCertifications();
+  renderInterests();
   renderPreview();
 })();
 </script>

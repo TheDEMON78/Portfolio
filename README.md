@@ -5,7 +5,7 @@ Générateur de portfolio dynamique — un unique fichier HTML autonome (`index.
 ## Utilisation
 
 1. Ouvrez `index.html` dans un navigateur (aucune installation, aucun serveur requis).
-2. Remplissez le formulaire à gauche : profil, liens sociaux, compétences, projets.
+2. Remplissez le formulaire à gauche : profil, liens sociaux, expérience professionnelle, formation, projets, compétences, langues, certifications, centres d'intérêt.
 3. L'aperçu à droite se met à jour en temps réel.
 4. Téléchargez le résultat :
    - `index.html` et `style.css` séparément, ou
